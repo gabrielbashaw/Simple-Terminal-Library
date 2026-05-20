@@ -40,4 +40,18 @@ public:
   // Show the cursor
   void ShowCursor();
   /* End Terminal Manipulation */
+
+  /* Color Management */
+  // Set both foreground and background colors
+  // 0: Black, 1: Red, 2: Green, 3: Yellow, 4: Blue, 5: Magenta, 6: Cyan, 7: White
+  void SetColor(short fg, short bg);
+  // Set text color (0-7)
+  // 0: Black, 1: Red, 2: Green, 3: Yellow, 4: Blue, 5: Magenta, 6: Cyan, 7: White
+  void SetForegroundColor(short fg);
+  // Set background color (0-7)
+  // 0: Black, 1: Red, 2: Green, 3: Yellow, 4: Blue, 5: Magenta, 6: Cyan, 7: White
+  void SetBackgroundColor(short bg);
+  // Reset text and background colors to default
+  void ResetColors();
+  /* End Color Management*/
 };

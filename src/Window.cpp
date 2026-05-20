@@ -73,3 +73,29 @@ void Window::ShowCursor() {
   // ANSI escape code to show the cursor
   std::cout << "\033[?25h";
 }
+
+void Window::SetColor(short fg, short bg) {
+  SetForegroundColor(fg);
+  SetBackgroundColor(bg);
+}
+
+void Window::SetForegroundColor(short fg) {
+  // Default to white if out of range
+  if (fg < 0 || fg > 7) fg = 7;
+
+  // ANSI escape code to set text color (30-37 for foreground)
+  std::cout << "\033[" << (30 + fg) << "m";
+}
+
+void Window::SetBackgroundColor(short bg) {
+  // Default to black if out of range
+  if (bg < 0 || bg > 7) bg = 0;
+
+  // ANSI escape code to set background color (40-47 for background)
+  std::cout << "\033[" << (40 + bg) << "m";
+}
+
+void Window::ResetColors() {
+  // ANSI escape code to reset colors
+  std::cout << "\033[0m";
+}
