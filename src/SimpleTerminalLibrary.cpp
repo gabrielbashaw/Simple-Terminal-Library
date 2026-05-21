@@ -25,33 +25,45 @@ int main() {
   Window term;
   term.HideCursor();
 
+  // Initialize color pairs
+  Color::InitColorPair(1, COLOR_WHITE, COLOR_BLUE);
+  Color::InitColorPair(2, COLOR_BLACK, COLOR_YELLOW);
+  Color::InitColorPairRGB(3, RGB{ 255, 0, 255 }, RGB{ 0, 255, 255 }); // Magenta on Cyan
+
   // Create a window and draw a border around it
   IWindow win;
-  term.SetBackgroundColor(4); // Set background color to blue
-  win = term.CreateWin(40, 10, 5, 5);
+  win = term.CreateWin(40, 25, 0, 1);
   term.Border(win, '|', '|', '-', '-', '+', '+', '+', '+');
-  term.RefreshWin(win);
-  term.ResetColors();
-
   // Create a second window to demonstrate multiple windows
   IWindow win2;
-  term.SetBackgroundColor(2); // Set background color to green
-  win2 = term.CreateWin(30, 10, 50, 5);
+  win2 = term.CreateWin(30, 10, 41, 1);
   term.Border(win2, '|', '|', '-', '-', '+', '+', '+', '+');
-  term.RefreshWin(win2);
-  term.ResetColors();
+  // Create a third window to demonstrate multiple windows
+  IWindow win3;
+  win3 = term.CreateWin(20, 5, 60, 20);
+  term.Border(win3, '|', '|', '-', '-', '+', '+', '+', '+');
 
   while (true) {
-    term.MoveCursor(10, 20);
+    term.MoveCursor(10, 25);
 
     term.WPrintLn(win, 2, 2, "Hello, Window 1!");
     term.WPrintLn(win2, 19, 2, "Hello, Window 2!");
 
     wchar_t ch = GetKey();
     if (ch == 27) break; // Exit on ESC key
+
     if (ch == 49) {
+      Color::EnableAttribute(1); // Enable color pair 1 (white on blue)
       term.RefreshWin(win); // Refresh window on '1' key
+      Color::DisableAttribute(1); // Disable color pair 1
+      
+      Color::EnableAttribute(2); // Enable color pair 2 (black on yellow)
       term.RefreshWin(win2); // Refresh window on '1' key
+      Color::DisableAttribute(2); // Disable color pair 2
+
+      Color::EnableAttribute(3); // Enable custom RGB color pair 3 (magenta)
+      term.RefreshWin(win3); // Refresh window on '1' key
+      Color::DisableAttribute(3); // Disable custom RGB color pair 3
     }
   }
 }

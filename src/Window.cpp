@@ -23,15 +23,19 @@ void Window::RefreshWin(IWindow& win) {
 
 void Window::Border(IWindow& win, char l, char r, char t, char b, char tl, char tr, char bl, char br) {
   // Draw top and bottom borders
-  for (int i = 0; i < win.width; ++i) {
+  for (int i = 0; i < win.width; i++) {
     win.buffer[0][i] = t; // Top border
     win.buffer[win.height - 1][i] = b; // Bottom border
+
+    RefreshWin(win);
   }
 
   // Draw left and right borders
   for (int i = 0; i < win.height; ++i) {
     win.buffer[i][0] = l; // Left border
     win.buffer[i][win.width - 1] = r; // Right border
+
+    RefreshWin(win);
   }
 
   // Window Corners
@@ -39,6 +43,7 @@ void Window::Border(IWindow& win, char l, char r, char t, char b, char tl, char 
   win.buffer[0][win.width - 1] = tr; // Top-right corner
   win.buffer[win.height - 1][0] = bl; // Bottom-left corner
   win.buffer[win.height - 1][win.width - 1] = br; // Bottom-right corner
+  RefreshWin(win);
 }
 
 void Window::WPrintLn(IWindow& win, short x, short y, std::string text) {
@@ -72,30 +77,4 @@ void Window::HideCursor() {
 void Window::ShowCursor() {
   // ANSI escape code to show the cursor
   std::cout << "\033[?25h";
-}
-
-void Window::SetColor(short fg, short bg) {
-  SetForegroundColor(fg);
-  SetBackgroundColor(bg);
-}
-
-void Window::SetForegroundColor(short fg) {
-  // Default to white if out of range
-  if (fg < 0 || fg > 7) fg = 7;
-
-  // ANSI escape code to set text color (30-37 for foreground)
-  std::cout << "\033[" << (30 + fg) << "m";
-}
-
-void Window::SetBackgroundColor(short bg) {
-  // Default to black if out of range
-  if (bg < 0 || bg > 7) bg = 0;
-
-  // ANSI escape code to set background color (40-47 for background)
-  std::cout << "\033[" << (40 + bg) << "m";
-}
-
-void Window::ResetColors() {
-  // ANSI escape code to reset colors
-  std::cout << "\033[0m";
 }
