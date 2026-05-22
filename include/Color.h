@@ -1,9 +1,9 @@
-#pragma once
+﻿#pragma once
 #include <iostream>
 #include <regex>
 #include <variant>
 
-enum DefaultColors {
+enum class DefaultColors {
   COLOR_BLACK,
   COLOR_RED,
   COLOR_GREEN,
@@ -19,13 +19,17 @@ struct RGB { uint8_t r, g, b; };
 struct Indexed { short index; };
 using ColorType = std::variant<Default, RGB, Indexed>;
 
-// Structure to represent a color pair (foreground and background)
+// Represent a color pair (foreground and background)
 struct ColorPair {
-  short pairNumber; // Store the color pair number (0-255)
-  ColorType fg;     // Store foreground color indices (0-7 for default colors)
-  ColorType bg;     // Store background color indices (0-7 for default colors)
+  short pairNumber; // Pair number (0-255)
+  ColorType fg;     // Foreground color
+  ColorType bg;     // Background color
 };
 
+/// <summary>
+/// Provides functionality for managing colors in the terminal, 
+/// including defining color pairs and applying them to text.
+/// </summary>
 class Color {
 public:
   /* Color Pair Management */

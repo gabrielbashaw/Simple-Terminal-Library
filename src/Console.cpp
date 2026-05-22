@@ -1,4 +1,4 @@
-#include "Console.h"
+﻿#include "Console.h"
 
 void PrintFlag(const char* name, DWORD mode, DWORD flag) {
   std::cout << name << ": "
@@ -40,29 +40,44 @@ void Console::StartupCon() {
   }
 
   if (GetConsoleMode(hStdin, &mode)) {
-    // Save the current console mode and code page
     _previousMode = mode;
     _previousCP = GetConsoleCP();
 
     // Disable default input processing and enable virtual terminal input
-    DisableFlags(mode, ENABLE_PROCESSED_INPUT | ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT);
+    DisableFlags(mode, ENABLE_PROCESSED_INPUT | ENABLE_LINE_INPUT);
     EnableFlags(mode, ENABLE_VIRTUAL_TERMINAL_INPUT | ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT);
 
     // Apply the modified console mode
     SetConsoleMode(hStdin, mode);
-    SetConsoleCP(CP_UTF8); // Set console code page to UTF-8
-    SetConsoleOutputCP(CP_UTF8); // Set console output code page to UTF-8
+    SetConsoleCP(CP_UTF8);
+    SetConsoleOutputCP(CP_UTF8);
   }
 
   Flags(mode);
+}
+
+void Console::NoEcho() {
+  HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+  DWORD mode = 0;
+
+  if (hStdin == INVALID_HANDLE_VALUE) {
+    std::cerr << "Error getting standard input handle: " << GetLastError() << "\n";
+    return;
+  }
+
+  // Disable echoing of input characters
+  if (GetConsoleMode(hStdin, &mode)) {
+    DisableFlags(mode, ENABLE_ECHO_INPUT);
+    SetConsoleMode(hStdin, mode);
+  }
 }
 
 void Console::RestoreCon() {
   HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
 
   SetConsoleMode(hStdin, _previousMode);
-  SetConsoleCP(_previousCP); // Restore previous console code page
-  SetConsoleOutputCP(_previousCP); // Restore previous console output code page
+  SetConsoleCP(_previousCP);
+  SetConsoleOutputCP(_previousCP);
 
   Flags(_previousMode);
 }

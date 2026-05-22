@@ -1,4 +1,6 @@
-#include <stdio.h>
+﻿#include <stdio.h>
+#include "Console.h"
+#include "Color.h"
 #include "Window.h"
 
 char GetKey() {
@@ -21,49 +23,56 @@ char GetKey() {
   }
 }
 
+void WindowBuilder(short winNum, short width, short height, short x, short y) {
+  WindowManager term;
+  Window win;
+
+  win = term.CreateWin(width, height, x, y);
+  term.Border(win);
+  term.WPrintLn(win, 19, 2, "Hello, Window " + std::to_string(winNum).append("!"));
+  term.RefreshWin(win);
+}
+
+void InitColor() {
+  for (short fg = 0; fg < 8; ++fg) {
+    for (short bg = 0; bg < 8; ++bg) {
+      short pairNumber = fg * 8 + bg + 1; // Pair numbers start from 1
+      Color::InitColorPair(pairNumber, fg, bg);
+    }
+  }
+
+  // Custom RGB color pair (white on black)
+  Color::InitColorPairRGB(65, RGB{ 255, 255, 255 }, RGB{ 0, 0, 0 });
+}
+
 int main() {
-  Window term;
+  WindowManager term;
+  Window win;
+
+  InitColor();
+  term.ClrScr();
   term.HideCursor();
-
-  // Initialize color pairs
-  Color::InitColorPair(1, COLOR_WHITE, COLOR_BLUE);
-  Color::InitColorPair(2, COLOR_BLACK, COLOR_YELLOW);
-  Color::InitColorPairRGB(3, RGB{ 255, 0, 255 }, RGB{ 0, 255, 255 }); // Magenta on Cyan
-
-  // Create a window and draw a border around it
-  IWindow win;
-  win = term.CreateWin(40, 25, 0, 1);
-  term.Border(win, '|', '|', '-', '-', '+', '+', '+', '+');
-  // Create a second window to demonstrate multiple windows
-  IWindow win2;
-  win2 = term.CreateWin(30, 10, 41, 1);
-  term.Border(win2, '|', '|', '-', '-', '+', '+', '+', '+');
-  // Create a third window to demonstrate multiple windows
-  IWindow win3;
-  win3 = term.CreateWin(20, 5, 60, 20);
-  term.Border(win3, '|', '|', '-', '-', '+', '+', '+', '+');
-
+  
   while (true) {
     term.MoveCursor(10, 25);
-
-    term.WPrintLn(win, 2, 2, "Hello, Window 1!");
-    term.WPrintLn(win2, 19, 2, "Hello, Window 2!");
 
     wchar_t ch = GetKey();
     if (ch == 27) break; // Exit on ESC key
 
     if (ch == 49) {
-      Color::EnableAttribute(1); // Enable color pair 1 (white on blue)
-      term.RefreshWin(win); // Refresh window on '1' key
-      Color::DisableAttribute(1); // Disable color pair 1
-      
-      Color::EnableAttribute(2); // Enable color pair 2 (black on yellow)
-      term.RefreshWin(win2); // Refresh window on '1' key
-      Color::DisableAttribute(2); // Disable color pair 2
-
-      Color::EnableAttribute(3); // Enable custom RGB color pair 3 (magenta)
-      term.RefreshWin(win3); // Refresh window on '1' key
-      Color::DisableAttribute(3); // Disable custom RGB color pair 3
+      Color::EnableAttribute(9);
+      WindowBuilder(1, 30, 10, 5, 5);
+      Color::DisableAttribute(9);
+    }
+    if (ch == 50) {
+      Color::EnableAttribute(46);
+      WindowBuilder(2, 30, 10, 40, 5);
+      Color::DisableAttribute(46);
+    }
+    if (ch == 51) {
+      Color::EnableAttribute(65);
+      WindowBuilder(3, 30, 10, 75, 5);
+      Color::DisableAttribute(65);
     }
   }
 }

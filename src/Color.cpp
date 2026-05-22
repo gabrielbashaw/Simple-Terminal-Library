@@ -1,4 +1,4 @@
-#include "Color.h"
+﻿#include "Color.h"
 
 ColorPair Color::_color_pairs[256];
 void Color::InitColorPair(short pair, short fg, short bg) {
@@ -13,7 +13,6 @@ void Color::InitColorPair(short pair, short fg, short bg) {
 
 void Color::InitColorPairRGB(short pair, RGB fg, RGB bg) {
   if (pair < 0 || pair >= 256) return; // Out of range
-  
 
   _color_pairs[pair].pairNumber = pair;
   _color_pairs[pair].fg = RGB{ fg };
@@ -61,8 +60,7 @@ void Color::EnableAttribute(short pair) {
 }
 
 void Color::DisableAttribute(short pair) {
-  // Reset all attributes
-  std::cout << "\033[0m";
+  std::cout << "\033[0m"; // Reset all attributes
 }
 
 void Color::SetColor(short fg, short bg) {
@@ -71,16 +69,14 @@ void Color::SetColor(short fg, short bg) {
 }
 
 void Color::SetForegroundColor(short fg) {
-  // Default to white if out of range
-  if (fg < 0 || fg > 7) fg = 7;
+  if (fg < 0 || fg > 7) fg = 7; // Default to white if out of range
 
   // ANSI escape code to set text color (30-37 for foreground)
   std::cout << "\033[" << (30 + fg) << "m";
 }
 
 void Color::SetBackgroundColor(short bg) {
-  // Default to black if out of range
-  if (bg < 0 || bg > 7) bg = 0;
+  if (bg < 0 || bg > 7) bg = 0; // Default to black if out of range
 
   // ANSI escape code to set background color (40-47 for background)
   std::cout << "\033[" << (40 + bg) << "m";
