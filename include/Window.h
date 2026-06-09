@@ -1,12 +1,22 @@
 ﻿#pragma once
 #include <iostream>
 #include <vector>
+#include "Color.h"
 
-// A cell in the window buffer
-struct Cells {
-  // short r, c;        // Row and column position in the window
-  char ch = ' ';        // Character to display in the cell
-  short colorPair = -1; // -1 means no color pair applied
+// A cell in the window frontBuffer
+struct Cell {
+  char glyph = ' ';        // Character to display in the cell
+  short colorPair = -1;    //TODO: -1 means no color pair applied
+  bool isDirty = true;     // Has cell changed since last refresh
+
+  void UpdateGlyph(char newGlyph) {
+    if (glyph != newGlyph) {
+      glyph = newGlyph;
+      isDirty = true;
+    }
+  }
+
+  void Clean() { isDirty = false; }
 };
 // A window in the terminal
 // Buffer[][] is indexed as [row][column] or [y][x]
@@ -16,7 +26,8 @@ struct Window {
   short width = 0;
   short height = 0;
 
-  std::vector<std::vector<Cells>> buffer;
+  std::vector<std::vector<Cell>> frontBuffer;     // Current state of the windows content
+  std::vector<std::vector<Cell>> backBuffer;      // Desired state of window content after refresh
 };
 // Border characters for the window
 struct BorderStyle {
@@ -39,15 +50,13 @@ class WindowManager {
 public:
   /* Window Management */
   // Create a new window with specified dimensions and position
-  Window CreateWin(int width, int height, int startX, int startY);
+  static Window CreateWin(int width, int height, int startX = 0, int startY = 0);
   // Refresh the content of the window on the console
-  // TODO: Optimize by only redrawing changed parts of the window
   void RefreshWin(Window& win);
   // Draw a border around the window using specified characters for sides and corners
   void Border(Window& win, const BorderStyle& style = {});
-  // Print a string at (x, y) within the window's buffer
-  // TODO: Fix: Add bounds checking and clipping.
-  void WPrintLn(Window& win, short x, short y, std::string text, ...);
+  // Print a string at (x, y)
+  void WPrint(Window& win, short x, short y, std::string text);
   /* End Window Management */
   
   /* Screen Manipulation */
@@ -62,4 +71,13 @@ public:
   // Show the cursor
   void ShowCursor();
   /* End Screen Manipulation */
+
+private:
+  // Draw the window content to the console
+  void Draw(std::ostream& os, Window& win);
 };
+
+inline std::ostream& operator<<(std::ostream& os, const Cell& cell) {
+  os << cell.glyph;
+  return os;
+}

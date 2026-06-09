@@ -1,57 +1,57 @@
 ﻿#include "Window.h"
 
 Window WindowManager::CreateWin(int width, int height, int startX, int startY) {
-  Cells cell{};
+  Cell cell{};
   Window win{};
+
+  if (startX < 0) startX = 0;
+  if (startY < 0) startY = 0;
 
   win.width = width += 2;
   win.height = height += 2;
   win.startX = startX;
   win.startY = startY;
 
-  win.buffer.resize(height, std::vector<Cells>(width, cell)); // Initialize buffer with default cells
+  win.frontBuffer.resize(height, std::vector<Cell>(width, cell)); // Initialize frontBuffer with default cells
+  win.backBuffer = win.frontBuffer; // Init backBuffer to match frontBuffer
 
   return win;
 }
 
 void WindowManager::RefreshWin(Window& win) {
-  for (short r = 0; r < win.height; ++r) {
-    MoveCursor(win.startX + 1, win.startY + r + 1);
-    for (short c = 0; c < win.width; ++c) {
-      std::cout << win.buffer[r][c].ch;
-    }
-  }
+  Draw(std::cout, win);
 }
 
-void WindowManager::Border(Window& win, const BorderStyle& style) {
+void WindowManager::Border(Window& win, const BorderStyle& glyph) {
   // Window Corners
-  win.buffer[0][0].ch = style.topLeft;
-  win.buffer[0][win.width - 1].ch = style.topRight;
-  win.buffer[win.height - 1][0].ch = style.bottomLeft;
-  win.buffer[win.height - 1][win.width - 1].ch = style.bottomRight;
+  win.frontBuffer[0][0].UpdateGlyph(glyph.topLeft);
+  win.frontBuffer[0][win.width - 1].UpdateGlyph(glyph.topRight);
+  win.frontBuffer[win.height - 1][0].UpdateGlyph(glyph.bottomLeft);
+  win.frontBuffer[win.height - 1][win.width - 1].UpdateGlyph(glyph.bottomRight);
 
   // Draw top and bottom borders
   for (int i = 1; i < win.width - 1; ++i) {
-    win.buffer[0][i].ch = style.top;
-    win.buffer[win.height - 1][i].ch = style.bottom;
+    win.frontBuffer[0][i].UpdateGlyph(glyph.top);
+    win.frontBuffer[win.height - 1][i].UpdateGlyph(glyph.bottom);
   }
 
   // Draw left and right borders
   for (int i = 1; i < win.height - 1; ++i) {
-    win.buffer[i][0].ch = style.left;
-    win.buffer[i][win.width - 1].ch = style.right;
+    win.frontBuffer[i][0].UpdateGlyph(glyph.left);
+    win.frontBuffer[i][win.width - 1].UpdateGlyph(glyph.right);
   }
-
-  RefreshWin(win);
 }
 
-void WindowManager::WPrintLn(Window& win, short x, short y, std::string text, ...) {
-  // Bounds checking to prevent writing outside the window buffer
-  if (y < 0 || y >= win.height) return;
-  if (x < 0 || x >= win.width) return;
-
+void WindowManager::WPrint(Window& win, short x, short y, std::string text) {
+  //TODO: Replace with an error msg
+  // Bounds checking to prevent writing outside the window frontBuffer
+  if (y <= 0 || y >= win.height) return;
+  if (x <= 0 || x >= win.width) return;
+  
   for (size_t i = 0; i < text.size() && (x + i) < win.width - 1; ++i) {
-    win.buffer[y][x + i].ch = text[i];
+    Cell& cell = win.frontBuffer[y][x + i];
+    MoveCursor(x + i, y + 1);
+    cell.UpdateGlyph(text[i]);
   }
 }
 
@@ -78,4 +78,29 @@ void WindowManager::HideCursor() {
 void WindowManager::ShowCursor() {
   // ANSI escape code to show the cursor
   std::cout << "\033[?25h";
+}
+
+void WindowManager::Draw(std::ostream& os, Window& win) {
+  short x, y;
+  for (size_t r = 0; r < win.height; r++) {
+    bool cursorMoved = false;
+    for (size_t c = 0; c < win.width; c++) {
+      Cell& cell = win.frontBuffer[r][c];
+      
+      if (!cell.isDirty) {
+        cursorMoved = false;
+        continue;
+      }
+      
+      if (!cursorMoved) {
+        x = win.startX + c + 1;
+        y = win.startY + r + 1;
+        os << "\033[" << y << ";" << x << "H";
+        cursorMoved = true;
+      }
+      
+      os << cell;
+      cell.Clean();
+    }
+  }
 }
