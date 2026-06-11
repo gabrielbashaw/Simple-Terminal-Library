@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <iostream>
+#include <format>
 #include <regex>
 #include <variant>
 
@@ -15,8 +16,8 @@ enum class DefaultColors {
 };
 
 struct Default {};
-struct RGB { uint8_t r, g, b; };
 struct Indexed { short index; };
+struct RGB { uint8_t r, g, b; };
 using ColorType = std::variant<Default, RGB, Indexed>;
 
 // Represent a color pair (foreground and background)
@@ -26,12 +27,35 @@ struct ColorPair {
   ColorType bg;     // Background color
 };
 
+// Represent a color in hexadecimal format (0xRRGGBB)
+struct HexColor {
+  uint32_t fg = 0xFFFFFF;
+  uint32_t bg = 0x000000;
+};
+struct Style {
+  uint32_t fgStyle;
+  uint32_t bgStyle;
+  uint16_t flags;
+};
+
 /// <summary>
 /// Provides functionality for managing colors in the terminal, 
 /// including defining color pairs and applying them to text.
 /// </summary>
 class Color {
 public:
+  Color();
+  Color(uint32_t fg = 0xCCCCCC, uint32_t bg = 0x0C0C0C);
+  Color(RGB fg, RGB bg);
+  /*   New Color Functions   */
+  // Optionally set foreground and background colors (e.g. fg = 0xCCCCCC, bg = 0x0C0C0C)
+  static Style ColorHex(uint32_t fg = 0xCCCCCC, uint32_t bg = 0x0C0C0C);
+  // Optionally set foreground and background colors (e.g. fg = {255, 255, 255}, bg = {0, 0, 0})
+  static Style ColorRGB(RGB fg, RGB bg);
+  // Optionally set foreground and background colors (e.g. fg = {255, 255, 255}, bg = {0, 0, 0})
+  //static Style Color(uint8_t fg, uint8_t bg);
+  /* End New Color Functions */
+
   /* Color Pair Management */
   // Initialize color pairs
   static void InitColorPair(short pair, short fg, short bg);

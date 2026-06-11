@@ -1,5 +1,27 @@
 ﻿#include "Color.h"
 
+Color::Color() {
+}
+
+Color::Color(uint32_t fg, uint32_t bg) {
+  fg = (fg <= 0xFFFFFF) ? fg : 0xCCCCCC;
+  bg = (bg <= 0xFFFFFF) ? bg : 0x0C0C0C;
+}
+
+Color::Color(RGB fg, RGB bg) {
+}
+
+Style Color::ColorHex(uint32_t fg, uint32_t bg) {
+  return Style(fg, bg);
+}
+
+Style Color::ColorRGB(RGB fg, RGB bg) {
+  return Style (
+    (fg.r << 16) | (fg.g << 8) | fg.b,
+    (bg.r << 16) | (bg.g << 8) | bg.b
+  );
+}
+
 ColorPair Color::_color_pairs[256];
 void Color::InitColorPair(short pair, short fg, short bg) {
   if (pair < 0 || pair >= 256) return; // Out of range
@@ -23,7 +45,7 @@ void Color::EnableAttribute(short pair) {
   const auto& fg = _color_pairs[pair].fg;
   const auto& bg = _color_pairs[pair].bg;
 
-  // Forground color
+  // Foreground color
   std::visit([](auto&& color) {
     using T = std::decay_t<decltype(color)>;
 

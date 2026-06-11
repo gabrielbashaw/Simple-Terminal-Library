@@ -1,22 +1,15 @@
 ﻿#pragma once
-#include <iostream>
+//#include <iostream>
 #include <vector>
 #include "Color.h"
+#include "Cursor.h"
 
 // A cell in the window frontBuffer
 struct Cell {
-  char glyph = ' ';        // Character to display in the cell
-  short colorPair = -1;    //TODO: -1 means no color pair applied
-  bool isDirty = true;     // Has cell changed since last refresh
-
-  void UpdateGlyph(char newGlyph) {
-    if (glyph != newGlyph) {
-      glyph = newGlyph;
-      isDirty = true;
-    }
-  }
-
-  void Clean() { isDirty = false; }
+  char glyph = ' ';         // Character to display in the cell
+  uint32_t fg = 0xFFFFFF;
+  uint32_t bg = 0x0000FF;
+  bool isDirty = true;  // Has cell changed since last refresh
 };
 // A window in the terminal
 // Buffer[][] is indexed as [row][column] or [y][x]
@@ -28,6 +21,15 @@ struct Window {
 
   std::vector<std::vector<Cell>> frontBuffer;     // Current state of the windows content
   std::vector<std::vector<Cell>> backBuffer;      // Desired state of window content after refresh
+
+  void UpdateGlyph(Cell& cell, char newGlyph) {
+    if (cell.glyph != newGlyph) {
+      cell.glyph = newGlyph;
+      cell.isDirty = true;
+    }
+  }
+
+  void Clean(Cell& cell) { cell.isDirty = false; }
 };
 // Border characters for the window
 struct BorderStyle {
@@ -57,6 +59,8 @@ public:
   void Border(Window& win, const BorderStyle& style = {});
   // Print a string at (x, y)
   void WPrint(Window& win, short x, short y, std::string text);
+  // Print random garbage in window for testing
+  void WPrintRandomGarbage(Window& win);
   /* End Window Management */
   
   /* Screen Manipulation */
@@ -64,12 +68,6 @@ public:
   void ClrScr();
   // Clear the screen and move cursor to (x, y)
   void MvClrScr(int x, int y);
-  // Move the cursor to (x, y)
-  void MoveCursor(int x, int y);
-  // Hide the cursor
-  void HideCursor();
-  // Show the cursor
-  void ShowCursor();
   /* End Screen Manipulation */
 
 private:
