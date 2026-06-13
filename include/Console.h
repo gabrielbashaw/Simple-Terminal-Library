@@ -5,7 +5,7 @@
 /// <summary>
 /// Provides functionality for managing the console mode, 
 /// including saving the current mode, modifying it for custom input handling, 
-/// and restoring it to its previous state. 
+/// and restoring it to its previous mState. 
 /// It allows for enabling and disabling specific console input modes to 
 /// facilitate features like capturing key events without interference from default processing.
 /// </summary>
@@ -19,7 +19,7 @@ public:
   static void StartupCon();
   // Disable echoing of input characters to the console
   static void NoEcho();
-  // Restore the console mode to its previous state
+  // Restore the console mode to its previous mState
   static void RestoreCon();
   /* End Console mode management */
 

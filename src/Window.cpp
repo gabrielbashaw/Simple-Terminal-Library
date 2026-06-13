@@ -1,101 +1,85 @@
 ﻿#include "Window.h"
 
-Window WindowManager::CreateWin(int width, int height, int startX, int startY) {
-  Cell cell{};
-  Window win{};
+stl::Window::Window(const WindowConfig& config) : mCfg(config) {
+  if ((mCfg.width < 1) || (mCfg.height < 1)) {
+    mCfg.width = 25;
+    mCfg.height = 10;
+  }
 
-  if (startX < 0) startX = 0;
-  if (startY < 0) startY = 0;
+  mOuterWidth = mCfg.width + 2;
+  mOuterHeight = mCfg.height + 2;
 
-  win.width = width += 2;
-  win.height = height += 2;
-  win.startX = startX;
-  win.startY = startY;
-
-  win.frontBuffer.resize(height, std::vector<Cell>(width, cell)); // Initialize frontBuffer with default cells
-  win.backBuffer = win.frontBuffer; // Init backBuffer to match frontBuffer
-
-  return win;
+  // Initialize buffer with default cells
+  mState.buffer.resize(mOuterHeight, std::vector<Cell>(mOuterWidth));
 }
 
-void WindowManager::RefreshWin(Window& win) {
-  Draw(std::cout, win);
-}
+const void stl::Window::border() {
+  short x = mOuterWidth;
+  short y = mOuterHeight;
+  WindowBorder border = mCfg.border;
 
-void WindowManager::Border(Window& win, const BorderStyle& glyph) {
   // Window Corners
-  win.UpdateGlyph(win.frontBuffer[0][0], glyph.topLeft);
-  win.UpdateGlyph(win.frontBuffer[0][win.width - 1], glyph.topRight);
-  win.UpdateGlyph(win.frontBuffer[win.height - 1][0], glyph.bottomLeft);
-  win.UpdateGlyph(win.frontBuffer[win.height - 1][win.width - 1], glyph.bottomRight);
+  mState.UpdateGlyph(0, 0, border.topLeft);
+  mState.UpdateGlyph(x - 1, 0, border.topRight);
+  mState.UpdateGlyph(0, y - 1, border.bottomLeft);
+  mState.UpdateGlyph(x - 1, y - 1, border.bottomRight);
 
   // Draw top and bottom borders
-  for (int i = 1; i < win.width - 1; ++i) {
-    win.UpdateGlyph(win.frontBuffer[0][i], glyph.top);
-    win.UpdateGlyph(win.frontBuffer[win.height - 1][i], glyph.bottom);
+  for (short i = 1; i < x - 1; ++i) {
+    mState.UpdateGlyph(i, 0, border.top);
+    mState.UpdateGlyph(i, y - 1, border.bottom);
   }
 
   // Draw left and right borders
-  for (int i = 1; i < win.height - 1; ++i) {
-    win.UpdateGlyph(win.frontBuffer[i][0], glyph.left);
-    win.UpdateGlyph(win.frontBuffer[i][win.width - 1], glyph.right);
+  for (short i = 1; i < y - 1; ++i) {
+    mState.UpdateGlyph(0, i, border.left);
+    mState.UpdateGlyph(x - 1, i, border.right);
   }
 }
 
-void WindowManager::WPrint(Window& win, short x, short y, std::string text) {
-  //TODO: Replace with an error msg
-  // Bounds checking to prevent writing outside the window frontBuffer
-  if (y <= 0 || y >= win.height) return;
-  if (x <= 0 || x >= win.width) return;
-  
-  for (size_t i = 0; i < text.size() && (x + i) < win.width - 1; ++i) {
-    Cell& cell = win.frontBuffer[y][x + i];
-    STL::cursor_move(x + i, y + 1);
-    win.UpdateGlyph(cell, text[i]);
-  }
-}
-
-void WindowManager::WPrintRandomGarbage(Window& win) {
-  for (size_t r = 1; r < win.height - 1; r++) {
-    for (size_t c = 1; c < win.width - 1; c++) {
-      Cell& cell = win.frontBuffer[r][c];
+const void stl::Window::print_random_garbage() {
+  short x = mOuterWidth;
+  short y = mOuterHeight;
+  for (short r = 1; r < y - 1; r++) {
+    for (short c = 1; c < x - 1; c++) {
       char randChar = ' ' + (rand() % 95); // Random ASCII char
-      win.UpdateGlyph(cell, randChar);
+      mState.UpdateGlyph(c, r, randChar);
     }
   }
 }
 
-void WindowManager::ClrScr() {
-  // ANSI escape code to clear the screen and move cursor to top-left
-  std::cout << "\033[2J\033[1;1H";
+const void stl::Window::print(short x, short y, std::string text) {
+  //TODO: Replace with an error msg
+  // Bounds checking to prevent writing outside the window buffer
+  if (y <= 0 || y >= mOuterHeight) return;
+  if (x <= 0 || x >= mOuterWidth) return;
+
+  for (short i = 0; i < text.size() && (x + i) < mOuterWidth - 1; ++i) {
+    mState.UpdateGlyph(x + i, y, text[i]);
+  }
 }
 
-void WindowManager::MvClrScr(int x, int y) {
-  // ANSI escape code to clear the screen and move cursor to (x, y)
-  std::cout << "\033[2J\033[" << y << ";" << x << "H";
-}
-
-void WindowManager::Draw(std::ostream& os, Window& win) {
-  short x, y;
-  for (size_t r = 0; r < win.height; r++) {
+const void stl::Window::refresh(std::ostream& os) {
+  short cX, cY;
+  short x = mOuterWidth;
+  short y = mOuterHeight;
+  for (short r = 0; r < y; r++) {
     bool cursorMoved = false;
-    for (size_t c = 0; c < win.width; c++) {
-      Cell& cell = win.frontBuffer[r][c];
-      
-      if (!cell.isDirty) {
+    for (short c = 0; c < x; c++) {
+      if (!mState.GetCell(c, r).isDirty) {
         cursorMoved = false;
         continue;
       }
-      
+
       if (!cursorMoved) {
-        x = win.startX + c + 1;
-        y = win.startY + r + 1;
-        os << STL::cursor_move(x, y);
+        cX = mCfg.startX + c + 1;
+        cY = mCfg.startY + r + 1;
+        os << stl::cursor_move(cX, cY);
         cursorMoved = true;
       }
 
-      os << cell;
-      win.Clean(cell);
+      os << mState.GetCell(c, r);
+      mState.Clean(c, r);
     }
   }
 }

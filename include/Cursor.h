@@ -1,7 +1,11 @@
 ﻿#pragma once
 #include <string>
 
-namespace STL {
+namespace stl {
+  /// <summary>
+  /// Currently does nothing!
+  /// Use 'stl::cursor...' functions
+  /// </summary>
   class Cursor {
   public:
     Cursor();
