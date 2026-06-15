@@ -9,64 +9,73 @@ stl::Window::Window(const WindowConfig& config) : mCfg(config) {
   mOuterWidth = mCfg.width + 2;
   mOuterHeight = mCfg.height + 2;
 
-  // Initialize buffer with default cells
-  mState.buffer.resize(mOuterHeight, std::vector<Cell>(mOuterWidth));
+  // Initialize buffer with cells from cfg
+  mState.buffer.resize(mOuterHeight);
+  for (auto& row : mState.buffer) {
+    row.resize(mOuterWidth);
+    for (auto& cell : row) {
+      cell.style = mCfg.style;
+      cell.glyph = ' ';
+      cell.isDirty = true;
+    }
+  }
 }
 
-const void stl::Window::border() {
+void stl::Window::border(){
   short x = mOuterWidth;
   short y = mOuterHeight;
   WindowBorder border = mCfg.border;
 
   // Window Corners
-  mState.UpdateGlyph(0, 0, border.topLeft);
-  mState.UpdateGlyph(x - 1, 0, border.topRight);
-  mState.UpdateGlyph(0, y - 1, border.bottomLeft);
-  mState.UpdateGlyph(x - 1, y - 1, border.bottomRight);
+  mState.update_glyph(0, 0, border.topLeft);
+  mState.update_glyph(x - 1, 0, border.topRight);
+  mState.update_glyph(0, y - 1, border.bottomLeft);
+  mState.update_glyph(x - 1, y - 1, border.bottomRight);
 
   // Draw top and bottom borders
   for (short i = 1; i < x - 1; ++i) {
-    mState.UpdateGlyph(i, 0, border.top);
-    mState.UpdateGlyph(i, y - 1, border.bottom);
+    mState.update_glyph(i, 0, border.top);
+    mState.update_glyph(i, y - 1, border.bottom);
   }
 
   // Draw left and right borders
   for (short i = 1; i < y - 1; ++i) {
-    mState.UpdateGlyph(0, i, border.left);
-    mState.UpdateGlyph(x - 1, i, border.right);
+    mState.update_glyph(0, i, border.left);
+    mState.update_glyph(x - 1, i, border.right);
   }
 }
 
-const void stl::Window::print_random_garbage() {
+void stl::Window::print_random_garbage() {
   short x = mOuterWidth;
   short y = mOuterHeight;
   for (short r = 1; r < y - 1; r++) {
     for (short c = 1; c < x - 1; c++) {
       char randChar = ' ' + (rand() % 95); // Random ASCII char
-      mState.UpdateGlyph(c, r, randChar);
+      mState.update_glyph(c, r, randChar);
     }
   }
 }
 
-const void stl::Window::print(short x, short y, std::string text) {
+void stl::Window::print(short x, short y, const std::string& text) {
   //TODO: Replace with an error msg
   // Bounds checking to prevent writing outside the window buffer
   if (y <= 0 || y >= mOuterHeight) return;
   if (x <= 0 || x >= mOuterWidth) return;
 
   for (short i = 0; i < text.size() && (x + i) < mOuterWidth - 1; ++i) {
-    mState.UpdateGlyph(x + i, y, text[i]);
+    mState.update_glyph(x + i, y, text[i]);
   }
 }
 
-const void stl::Window::refresh(std::ostream& os) {
+void stl::Window::refresh(std::ostream& os) {
   short cX, cY;
   short x = mOuterWidth;
   short y = mOuterHeight;
+
   for (short r = 0; r < y; r++) {
     bool cursorMoved = false;
     for (short c = 0; c < x; c++) {
-      if (!mState.GetCell(c, r).isDirty) {
+      if (!mState.get_cell(c, r).isDirty) {
         cursorMoved = false;
         continue;
       }
@@ -78,8 +87,8 @@ const void stl::Window::refresh(std::ostream& os) {
         cursorMoved = true;
       }
 
-      os << mState.GetCell(c, r);
-      mState.Clean(c, r);
+      os << mState.get_cell(c, r);
+      mState.clean(c, r);
     }
   }
 }

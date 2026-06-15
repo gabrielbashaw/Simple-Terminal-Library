@@ -2,14 +2,14 @@
 #include <vector>
 #include <ostream>
 #include "Cursor.h"
+#include "Color.h"
 
 namespace stl {
   // A cell in the window buffer
   struct Cell {
     char glyph = ' ';         // Character to display
     bool isDirty = true;      // Has cell changed since last refresh
-    uint32_t fg = 0xFFFFFF;
-    uint32_t bg = 0x0000FF;
+    Style style;
   };
   // Border characters for the window
   struct WindowBorder {
@@ -28,19 +28,19 @@ namespace stl {
     uint16_t startY = 0;
     uint16_t width = 25;
     uint16_t height = 10;
-
     WindowBorder border;
+    Style style;
   };
   // Current state of the window
-  // Buffer[][] is indexed as [row][column] or [y][x]
   struct WindowState {
+    // Buffer[][] is indexed as [row][column] or [y][x]
     std::vector<std::vector<Cell>> buffer;
 
-    const Cell& GetCell(short x, short y) {
+    Cell& get_cell(short x, short y) {
       return buffer[y][x];
     }
 
-    void UpdateGlyph(short x, short y, char newGlyph) {
+    void update_glyph(short x, short y, char newGlyph) {
       Cell& cell = buffer[y][x];
       if (cell.glyph != newGlyph) {
         cell.glyph = newGlyph;
@@ -48,7 +48,7 @@ namespace stl {
       }
     }
 
-    void Clean(short x, short y) {
+    void clean(short x, short y) {
       Cell& cell = buffer[y][x];
       cell.isDirty = false;
     }
@@ -64,13 +64,13 @@ namespace stl {
     Window(const WindowConfig& config);
 
     // Draw a mBorder around the window
-    const void border();
+    void border();
     // Print random garbage in window for testing
-    const void print_random_garbage();
+    void print_random_garbage();
     // Print a string at (x, y)
-    const void print(short x, short y, std::string text);
+    void print(short x, short y, const std::string& text);
     // Refresh the content of the window
-    const void refresh(std::ostream& os);
+    void refresh(std::ostream& os);
 
   private:
     WindowConfig mCfg;
@@ -81,7 +81,7 @@ namespace stl {
   };
 
   inline std::ostream& operator<<(std::ostream& os, const Cell& cell) {
-    os << cell.glyph;
+    os << cell.style.ansi() << cell.glyph;
     return os;
   }
 }

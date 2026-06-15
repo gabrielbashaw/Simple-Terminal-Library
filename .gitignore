@@ -1,7 +1,19 @@
-# Ignore Visual Studio files
+﻿# Ignore Visual Studio files
 *.vcxproj
 *.filters
 *.user
 
 # Build folders
 x64/
+
+# Keep project files
+!README.md
+
+!LICENSE
+!CMakeLists.txt
+
+# Keep source directories
+!src/
+!src/**
+!include/
+!include/**

@@ -1,84 +1,121 @@
 ﻿#pragma once
 #include <iostream>
-#include <format>
-#include <regex>
-#include <variant>
+#include <string>
 
-enum class DefaultColors {
-  COLOR_BLACK,
-  COLOR_RED,
-  COLOR_GREEN,
-  COLOR_YELLOW,
-  COLOR_BLUE,
-  COLOR_MAGENTA,
-  COLOR_CYAN,
-  COLOR_WHITE
-};
+namespace stl {
+  enum class BOLD_MODE {
+    NONE = 0, BOTH = 1,
+    FG = 90, BG = 100
+  };
+  enum class COLOR {
+    BLACK   = 0, RED     = 1, GREEN   = 2,
+    YELLOW  = 3, BLUE    = 4, MAGENTA = 5,
+    CYAN    = 6, WHITE   = 7
+  };
+  enum class ColorMode {
+    ANSI16,
+    ANSI256,
+    TRUECOLOR,
+  };
+  // TODO: Text attribute flags (e.g. bold, underline, reverse, blink, dim)
+  enum class Flags {
+    BOLD = 1 << 0,
+    UNDERLINE = 1 << 1,
+    REVERSE = 1 << 2,
+    BLINK = 1 << 3,
+    DIM = 1 << 4,
+  };
 
-struct Default {};
-struct Indexed { short index; };
-struct RGB { uint8_t r, g, b; };
-using ColorType = std::variant<Default, RGB, Indexed>;
+  // Hexadecimal format (0xRRGGBB)
+  struct Hex {
+    uint32_t fg = 0xFFFFFF;
+    uint32_t bg = 0x000000;
+  };
+  // RGB format (Red, Green, Blue)
+  struct RGB { uint8_t r, g, b; };
+  // ANSI 256-color format (0-255 for foreground and background)
+  struct ANSI256 { uint8_t value; };
+  // ANSI 16-color format (0-7 for foreground, 40-47 for background)
+  struct ASNI16 { uint8_t value; };
+  // Style struct to hold color information and generate ANSI escape codes
+  struct Style {
+    uint16_t flags = 0;
 
-// Represent a color pair (foreground and background)
-struct ColorPair {
-  short pairNumber; // Pair number (0-255)
-  ColorType fg;     // Foreground color
-  ColorType bg;     // Background color
-};
+    Style(uint32_t fg = 0xCCCCCC, uint32_t bg = 0x0C0C0C,
+      ColorMode m = ColorMode::TRUECOLOR)
+      : fg(fg), bg(bg), mode(m) {
+    }
 
-// Represent a color in hexadecimal format (0xRRGGBB)
-struct HexColor {
-  uint32_t fg = 0xFFFFFF;
-  uint32_t bg = 0x000000;
-};
-struct Style {
-  uint32_t fgStyle;
-  uint32_t bgStyle;
-  uint16_t flags;
-};
+    std::string ansi() const { 
+      if (mode == ColorMode::TRUECOLOR) {
+        return 
+          "\033[38;2;"
+          + std::to_string((fg >> 16) & 0xFF) + ";"
+          + std::to_string((fg >> 8) & 0xFF) + ";"
+          + std::to_string(fg & 0xFF) + "m"
+          + "\033[48;2;"
+          + std::to_string((bg >> 16) & 0xFF) + ";"
+          + std::to_string((bg >> 8) & 0xFF) + ";"
+          + std::to_string(bg & 0xFF) + "m";
+      }
+      else if (mode == ColorMode::ANSI256) {
+        return 
+          "\033[38;5;" + std::to_string(fg) + "m"
+          "\033[48;5;" + std::to_string(bg) + "m";
+      }
+      else {
+        return
+          "\033[" + std::to_string(fg) + "m"
+          "\033[" + std::to_string(bg) + "m";
+      }
+    }
 
-/// <summary>
-/// Provides functionality for managing colors in the terminal, 
-/// including defining color pairs and applying them to text.
-/// </summary>
-class Color {
-public:
-  Color();
-  Color(uint32_t fg = 0xCCCCCC, uint32_t bg = 0x0C0C0C);
-  Color(RGB fg, RGB bg);
-  /*   New Color Functions   */
-  // Optionally set foreground and background colors (e.g. fg = 0xCCCCCC, bg = 0x0C0C0C)
-  static Style ColorHex(uint32_t fg = 0xCCCCCC, uint32_t bg = 0x0C0C0C);
-  // Optionally set foreground and background colors (e.g. fg = {255, 255, 255}, bg = {0, 0, 0})
-  static Style ColorRGB(RGB fg, RGB bg);
-  // Optionally set foreground and background colors (e.g. fg = {255, 255, 255}, bg = {0, 0, 0})
-  //static Style Color(uint8_t fg, uint8_t bg);
-  /* End New Color Functions */
+  private:
+    ColorMode mode = ColorMode::TRUECOLOR;
+    uint32_t fg = 0xCCCCCC;
+    uint32_t bg = 0x0C0C0C;
+  };
 
-  /* Color Pair Management */
-  // Initialize color pairs
-  static void InitColorPair(short pair, short fg, short bg);
-  // Set RGB color (0-255 for each component)
-  static void InitColorPairRGB(short pair, RGB fg, RGB bg);
-  // Enable attribute pair
-  static void EnableAttribute(short pair);
-  // Disable attribute pair
-  static void DisableAttribute(short pair);
-  /* End Color Pair Management */
+  /// <summary>
+  /// Provides functionality for managing colors in the terminal
+  /// </summary>
+  class Color {
+  public:
+    Color() = default;
 
-  /* Color Management */
-  // Set both foreground and background colors
-  // 0: Black, 1: Red, 2: Green, 3: Yellow, 4: Blue, 5: Magenta, 6: Cyan, 7: White
-  void SetColor(short fg, short bg);
-  // Set text color (0-7)
-  // 0: Black, 1: Red, 2: Green, 3: Yellow, 4: Blue, 5: Magenta, 6: Cyan, 7: White
-  void SetForegroundColor(short fg);
-  // Set background color (0-7)
-  // 0: Black, 1: Red, 2: Green, 3: Yellow, 4: Blue, 5: Magenta, 6: Cyan, 7: White
-  void SetBackgroundColor(short bg);
-  /* End Color Management*/
+    /*     Direct Style Application     */
+    // Hex color code (e.g. fg = 0xCCCCCC, bg = 0x0C0C0C)
+    Style style_hex(const Hex& style = { 0xCCCCCC, 0x0C0C0C }) const;
+    // RGB color code (e.g. fg = {204, 204, 204}, bg = {12, 12, 12})
+    Style style_rgb(const RGB& fg = { 204, 204, 204 }, const RGB& bg = { 12, 12, 12 }) const;
+    // ANSI 256-color code (0-255 for foreground and background)
+    Style style_ansi256(const short fg, const short bg) const;
+    // ANSI 16-color code
+    Style style_ansi16(COLOR fg = COLOR::WHITE, COLOR bg = COLOR::BLACK, 
+      BOLD_MODE mode = BOLD_MODE::NONE) const;
+    /*   End Direct Style Application   */
 
-private:
-  static ColorPair _color_pairs[256]; // Store up to 256 color pairs (fg, bg)
-};
+    /* TODO: Color Pair Management */
+    // Initialize color pairs
+    //static void init_color_pair(short pair, short fg, short bg);
+    //// Enable attribute pair
+    //void enable_attr(short pair);
+    //// Disable attribute pair
+    //void disable_attr(short pair);
+    /* End Color Pair Management */
+
+    /*   Color Management   */
+    // Set both foreground and background colors
+    static std::string color(COLOR fg = COLOR::WHITE, COLOR bg = COLOR::BLACK, bool isBold = false);
+    // Set text color, with optional bright varient (bold)
+    static std::string color_fg(COLOR fg, bool isBold = false);
+    // Set background color, with optional bright varient (bold)
+    static std::string color_bg(COLOR bg, bool isBold = false);
+    // Reset ALL color attributes
+    static std::string color_reset();
+    /* End Color Management */
+
+  private:
+    Style mStyle[256];
+  };
+}

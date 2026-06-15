@@ -1,105 +1,68 @@
 ﻿#include "Color.h"
 
-Color::Color() {
+stl::Style stl::Color::style_hex(const Hex& style) const {
+  return Style(style.fg, style.bg, ColorMode::TRUECOLOR);
 }
 
-Color::Color(uint32_t fg, uint32_t bg) {
-  fg = (fg <= 0xFFFFFF) ? fg : 0xCCCCCC;
-  bg = (bg <= 0xFFFFFF) ? bg : 0x0C0C0C;
-}
-
-Color::Color(RGB fg, RGB bg) {
-}
-
-Style Color::ColorHex(uint32_t fg, uint32_t bg) {
-  return Style(fg, bg);
-}
-
-Style Color::ColorRGB(RGB fg, RGB bg) {
-  return Style (
+stl::Style stl::Color::style_rgb(const RGB& fg, const RGB& bg) const {
+  return Style(
     (fg.r << 16) | (fg.g << 8) | fg.b,
-    (bg.r << 16) | (bg.g << 8) | bg.b
+    (bg.r << 16) | (bg.g << 8) | bg.b,
+    ColorMode::TRUECOLOR
   );
 }
 
-ColorPair Color::_color_pairs[256];
-void Color::InitColorPair(short pair, short fg, short bg) {
-  if (pair < 0 || pair >= 256) return; // Out of range
-  if (fg < 0 || fg > 7) fg = 7; // Default to white if out of range
-  if (bg < 0 || bg > 7) bg = 0; // Default to black if out of range
-
-  _color_pairs[pair].pairNumber = pair;
-  _color_pairs[pair].fg = Indexed{ fg };
-  _color_pairs[pair].bg = Indexed{ bg };
+stl::Style stl::Color::style_ansi256(const short fg, const short bg) const {
+  return Style(fg, bg, ColorMode::ANSI256);
 }
 
-void Color::InitColorPairRGB(short pair, RGB fg, RGB bg) {
-  if (pair < 0 || pair >= 256) return; // Out of range
-
-  _color_pairs[pair].pairNumber = pair;
-  _color_pairs[pair].fg = RGB{ fg };
-  _color_pairs[pair].bg = RGB{ bg };
+stl::Style stl::Color::style_ansi16(const COLOR fg, const COLOR bg, BOLD_MODE mode) const {
+  short fgValue = static_cast<short>(fg);
+  short bgValue = static_cast<short>(bg);
+  switch (mode) {
+    case BOLD_MODE::BOTH:
+      fgValue += 90;
+      bgValue += 100;
+      break;
+    case BOLD_MODE::FG:
+      fgValue += 90;
+      bgValue += 40;
+      break;
+    case BOLD_MODE::BG:
+      fgValue += 30;
+      bgValue += 100;
+      break;
+    default:
+      fgValue += 30;
+      bgValue += 40;
+      break;
+  }
+  return Style(fgValue, bgValue, ColorMode::ANSI16);
 }
 
-void Color::EnableAttribute(short pair) {
-  const auto& fg = _color_pairs[pair].fg;
-  const auto& bg = _color_pairs[pair].bg;
-
-  // Foreground color
-  std::visit([](auto&& color) {
-    using T = std::decay_t<decltype(color)>;
-
-    if constexpr (std::is_same_v<T, Indexed>) {
-      std::cout << "\033[" << (30 + color.index) << "m";
-    }
-    else if constexpr (std::is_same_v<T, RGB>) {
-      std::cout << "\033[38;2;"
-        << static_cast<short>(color.r) << ";"
-        << static_cast<short>(color.g) << ";"
-        << static_cast<short>(color.b) << "m";
-    }
-    else if constexpr (std::is_same_v<T, Default>) {
-      std::cout << "\033[39m";
-    }
-  }, fg);
-
-  // Background color
-  std::visit([](auto&& color) {
-    using T = std::decay_t<decltype(color)>;
-    if constexpr (std::is_same_v<T, Indexed>) {
-      std::cout << "\033[" << (40 + color.index) << "m";
-    }
-    else if constexpr (std::is_same_v<T, RGB>) {
-      std::cout << "\033[48;2;"
-        << static_cast<short>(color.r) << ";"
-        << static_cast<short>(color.g) << ";"
-        << static_cast<short>(color.b) << "m";
-    }
-    else if constexpr (std::is_same_v<T, Default>) {
-      std::cout << "\033[39m";
-    }
-  }, bg);
+std::string stl::Color::color(COLOR fg, COLOR bg, bool isBold) {
+  std::string sequence = (isBold) ?
+    color_bg(bg, true) + color_fg(fg, true) :
+    color_bg(bg) + color_fg(fg);
+  return sequence;
 }
 
-void Color::DisableAttribute(short pair) {
-  std::cout << "\033[0m"; // Reset all attributes
+std::string stl::Color::color_fg(COLOR fg, bool isBold) {
+  short value = static_cast<short>(fg);
+  if (value > 7 || value < 0) return "\033[37m";
+  std::string sequence = (isBold)
+    ? "\033[1;3" + std::to_string(value) + "m"
+    : "\033[3" + std::to_string(value) + "m";
+  return sequence;
 }
 
-void Color::SetColor(short fg, short bg) {
-  SetForegroundColor(fg);
-  SetBackgroundColor(bg);
+std::string stl::Color::color_bg(COLOR bg, bool isBold) {
+  short value = static_cast<short>(bg);
+  if (value > 7 || value < 0) return "\033[40m";
+  std::string sequence = (isBold)
+    ? "\033[10" + std::to_string(value) + "m"
+    : "\033[4" + std::to_string(value) + "m";
+  return sequence;
 }
 
-void Color::SetForegroundColor(short fg) {
-  if (fg < 0 || fg > 7) fg = 7; // Default to white if out of range
-
-  // ANSI escape code to set text color (30-37 for foreground)
-  std::cout << "\033[" << (30 + fg) << "m";
-}
-
-void Color::SetBackgroundColor(short bg) {
-  if (bg < 0 || bg > 7) bg = 0; // Default to black if out of range
-
-  // ANSI escape code to set background color (40-47 for background)
-  std::cout << "\033[" << (40 + bg) << "m";
-}
+std::string stl::Color::color_reset() { return "\033[0m"; }
