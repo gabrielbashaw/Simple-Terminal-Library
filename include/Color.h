@@ -27,10 +27,7 @@ namespace stl {
   };
 
   // Hexadecimal format (0xRRGGBB)
-  struct Hex {
-    uint32_t fg = 0xFFFFFF;
-    uint32_t bg = 0x000000;
-  };
+  struct Hex { uint32_t fg, bg; };
   // RGB format (Red, Green, Blue)
   struct RGB { uint8_t r, g, b; };
   // ANSI 256-color format (0-255 for foreground and background)
@@ -51,12 +48,12 @@ namespace stl {
         return 
           "\033[38;2;"
           + std::to_string((fg >> 16) & 0xFF) + ";"
-          + std::to_string((fg >> 8) & 0xFF) + ";"
-          + std::to_string(fg & 0xFF) + "m"
+          + std::to_string((fg >> 8)  & 0xFF) + ";"
+          + std::to_string( fg        & 0xFF) + "m"
           + "\033[48;2;"
           + std::to_string((bg >> 16) & 0xFF) + ";"
-          + std::to_string((bg >> 8) & 0xFF) + ";"
-          + std::to_string(bg & 0xFF) + "m";
+          + std::to_string((bg >> 8)  & 0xFF) + ";"
+          + std::to_string( bg        & 0xFF) + "m";
       }
       else if (mode == ColorMode::ANSI256) {
         return 
@@ -84,13 +81,13 @@ namespace stl {
     Color() = default;
 
     /*     Direct Style Application     */
-    // Hex color code (e.g. fg = 0xCCCCCC, bg = 0x0C0C0C)
+    // Hex color code
     Style style_hex(const Hex& style = { 0xCCCCCC, 0x0C0C0C }) const;
-    // RGB color code (e.g. fg = {204, 204, 204}, bg = {12, 12, 12})
+    // RGB color code
     Style style_rgb(const RGB& fg = { 204, 204, 204 }, const RGB& bg = { 12, 12, 12 }) const;
-    // ANSI 256-color code (0-255 for foreground and background)
-    Style style_ansi256(const short fg, const short bg) const;
-    // ANSI 16-color code
+    // ANSI-256 color code (0-255 for foreground and background)
+    Style style_ansi256(const ANSI256& fg, const ANSI256& bg) const;
+    // ANSI-16 color codes
     Style style_ansi16(COLOR fg = COLOR::WHITE, COLOR bg = COLOR::BLACK, 
       BOLD_MODE mode = BOLD_MODE::NONE) const;
     /*   End Direct Style Application   */
@@ -105,12 +102,20 @@ namespace stl {
     /* End Color Pair Management */
 
     /*   Color Management   */
-    // Set both foreground and background colors
+    // Set foreground and background using Hex format
+    static std::string color(const Hex& hex = { 0xCCCCCC, 0x0C0C0C });
+    // Set forground and background using RGB format
+    static std::string color(const RGB& fg = { 204, 204, 204 }, const RGB& bg = { 12, 12, 12 });
+    // Set both foreground and background colors (ANSI-256 color)
+    static std::string color(const ANSI256& fg, const ANSI256& bg);
+    // Set both foreground and background colors (ANSI-16 color)
     static std::string color(COLOR fg = COLOR::WHITE, COLOR bg = COLOR::BLACK, bool isBold = false);
+
     // Set text color, with optional bright varient (bold)
     static std::string color_fg(COLOR fg, bool isBold = false);
     // Set background color, with optional bright varient (bold)
     static std::string color_bg(COLOR bg, bool isBold = false);
+
     // Reset ALL color attributes
     static std::string color_reset();
     /* End Color Management */

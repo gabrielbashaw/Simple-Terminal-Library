@@ -7,29 +7,29 @@
 namespace stl {
   // A cell in the window buffer
   struct Cell {
-    char glyph = ' ';         // Character to display
-    bool isDirty = true;      // Has cell changed since last refresh
+    char  glyph   = ' ';       // Character to display
+    bool  isDirty = true;      // Has cell changed since last refresh
     Style style;
   };
   // Border characters for the window
   struct WindowBorder {
-    char left = '|';
-    char right = '|';
-    char top = '-';    // ─
-    char bottom = '-'; // ─
-    char topLeft = '+';
-    char topRight = '+';
-    char bottomLeft = '+';
+    char left        = '|';
+    char right       = '|';
+    char top         = '-'; // ─
+    char bottom      = '-'; // ─
+    char topLeft     = '+';
+    char topRight    = '+';
+    char bottomLeft  = '+';
     char bottomRight = '+';
   };
   // Window configuration
   struct WindowConfig {
-    uint16_t startX = 0;
-    uint16_t startY = 0;
-    uint16_t width = 25;
-    uint16_t height = 10;
+    uint16_t     startX = 0;
+    uint16_t     startY = 0;
+    uint16_t     width  = 25;
+    uint16_t     height = 10;
     WindowBorder border;
-    Style style;
+    Style        style;
   };
   // Current state of the window
   struct WindowState {

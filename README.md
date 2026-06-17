@@ -6,7 +6,8 @@ STL provides a clean abstraction over terminal rendering, input handling, and wi
 
 ---
 
-## Features
+<!-- Features Section -->
+### Features:
 
 - Window-based terminal UI system
 - Per-window 2D character frame buffers
@@ -15,54 +16,96 @@ STL provides a clean abstraction over terminal rendering, input handling, and wi
 - Lightweight, dependency-free design
 - Simple API for text-based layouts and games
 
----
+#
 
-## Goal
+<!-- Goals Section -->
+### Goals:
 
-The goal is to better understand:
+**The goal is to better understand:**
 - how UI state can be represented in memory
 - how rendering pipelines are structured
 - how simple abstractions can create reusable UI systems
 
 ---
 
-## Example
+<!-- Example Section -->
+## Example:
 
-```cpp
-#include "Color.h"
-#include "Window.h"
+  The following code demonstrates how to create a window, draw some text, and render it to the terminal.
 
-int main() {
-  WindowManager wm;
-  Window win = wm.CreateWin(30, 10, 10, 5);
-  wm.Border(win);
-  wm.WPrintLn(win, 8, 4, "Hello, Window " + std::to_string(1).append("!"));
+#
 
-  Color::InitColorPairRGB(1, { 255, 255, 255 }, { 0, 0, 0 });
+<details>
+  <summary><h3>Sample Code:</h3></summary>
 
-  Color::EnableAttribute(1);
-  wm.RefreshWin(win);
-  Color::DisableAttribute(1);
+  ```cpp
+  #include "Color.h"
+  #include "Window.h"
+
+  // Function to create and configure a window
+  stl::Window WindowBuilder(
+  uint16_t width, uint16_t height,
+  uint16_t startX, uint16_t startY) {
+  stl::Color color;
+  stl::WindowConfig cfg{        // Window configuration parameters
+    .startX = startX,
+    .startY = startY,
+    .width = width,
+    .height = height,
+    .style = color.style_rgb({ 255, 255, 255 }, { 0, 0, 0 }),
+  };
+  stl::Window win(cfg);         // Create a window with the specified configuration
+  win.print_random_garbage();   // Fill the window buffer with random characters for testing
+  win.print(3, 3, "String");    // Print "String" at position (3, 3) in the window buffer
+  win.border();                 // Draw a border around the window
+  return win;
 }
-```
-## Sample Output
+  
+  int main() {
+    uint16_t width = 30;
+    uint16_t height = 10;
+    uint16_t startX = 5;
+    uint16_t startY = 5;
 
-```
-          +------------------------------+
-          |                              |
-          |                              |
-          |                              |
-          |       Hello, Window 1!       |
-          |                              |
-          |                              |
-          |                              |
-          |                              |
-          |                              |
-          |                              |
-          +------------------------------+
-```
+    stl::Window win = WindowBuilder(width, height, startX, startY);
 
-## How It Works
+    while (true) {
+      win.refresh(std::cout);   // Render the window buffer to the terminal
+    }
+  }
+  ```
+</details>
+
+#
+
+<details>
+  <summary><h3>Sample Output:</h3></summary>
+
+  ```
+  +------------------------------+
+  |IE`zjQn#mQ%9&,q0Rcm5{e'Z'@D!UH|
+  |@bNK`Y1o>.-]c<#)D0F<w~mmwBnSj2|
+  |]zStringjFvW9oRW{DiA[sQ$I\:]]x|
+  |BL52;d_wB+sRo2~R,:F]qWGh Brx^m|
+  |NuI0>c yIru*?`!*JlT@c@-<>j$d{_|
+  |YXS/i#M&OH9yj1n7MSw>?X` Dqs3#e|
+  |0oU$((\smw7iK_JN\^-.[0>bp8t0}}|
+  |QsQ8j6\\U}<cV#F9__\Diq3xorO^-E|
+  |UQM1i0Wx]0TeO*}DOIa<G"~v?n^?N~|
+  |JgYeHhCH(o!Z&$Ws^HT9-l6'OYt`gy|
+  |:jx"R*.3?,>*ZPtiB]^tBT+=#/cvgR|
+  |iE*t`0]Xv(FC9(Yi;MF0+svT&[0r$g|
+  |99Z0j~h=Zj=\zBlP)|nUh9#lE/cL$o|
+  |jBT3UMmr-'(aU(|4^9P;T.@\78#ON:|
+  |Ah9K40EO;?Q/| x$4%MUN/v,a*M.C[|
+  +------------------------------+
+  ```
+</details>
+
+---
+
+<!-- How It Works Section -->
+## How It Works:
 
 ### Draw Phase
 
@@ -75,7 +118,7 @@ During this stage:
 
 Responsible for composing the full frame in memory
 
----
+#
 
 ### Present Phase
 
@@ -89,6 +132,7 @@ This produces the final visual output.
 
 ---
 
+<!-- Architecture Section -->
 ## Architecture
 
 ### Window System
@@ -100,7 +144,7 @@ Each window maintains its own independent state, including:
 
 This allows for multiple UI regions to exist independently
 
----
+#
 
 ### Rendering Model
 
@@ -113,7 +157,7 @@ This design provides:
 - Clear separation between logic and presentation
 - Easier UI composition and debugging
 
----
+#
 
 ### Color System
 
@@ -123,6 +167,7 @@ It allows defining color pairs and enabling or disabling styling during renderin
 
 ---
 
+<!-- Design Goals Section -->
 ## Design Goals
 
 - Simple and intuitive API design
@@ -132,6 +177,8 @@ It allows defining color pairs and enabling or disabling styling during renderin
 - Foundation for small games and tools
 
 ---
+
+<!-- Future Improvements Section -->
 ## Future Improvements
 
 - Dirty Cell Tracking
@@ -142,6 +189,8 @@ It allows defining color pairs and enabling or disabling styling during renderin
 - Cross-platform terminal compatibility improvements
 
 ---
+
+<!--- Project Status Section -->
 ## Project Status
 
 Active development — experimental terminal UI system.

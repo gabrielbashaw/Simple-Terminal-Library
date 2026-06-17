@@ -8,7 +8,6 @@ x64/
 
 # Keep project files
 !README.md
-
 !LICENSE
 !CMakeLists.txt
 

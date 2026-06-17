@@ -12,8 +12,8 @@ stl::Style stl::Color::style_rgb(const RGB& fg, const RGB& bg) const {
   );
 }
 
-stl::Style stl::Color::style_ansi256(const short fg, const short bg) const {
-  return Style(fg, bg, ColorMode::ANSI256);
+stl::Style stl::Color::style_ansi256(const ANSI256& fg, const ANSI256& bg) const {
+  return Style(fg.value, bg.value, ColorMode::ANSI256);
 }
 
 stl::Style stl::Color::style_ansi16(const COLOR fg, const COLOR bg, BOLD_MODE mode) const {
@@ -40,12 +40,41 @@ stl::Style stl::Color::style_ansi16(const COLOR fg, const COLOR bg, BOLD_MODE mo
   return Style(fgValue, bgValue, ColorMode::ANSI16);
 }
 
+std::string stl::Color::color(const Hex& hex) {
+  return "\033[38;2;"
+    + std::to_string((hex.fg >> 16) & 0xFF) + ";"
+    + std::to_string((hex.fg >> 8)  & 0xFF) + ";"
+    + std::to_string( hex.fg        & 0xFF) + "m"
+    + "\033[48;2;"
+    + std::to_string((hex.bg >> 16) & 0xFF) + ";"
+    + std::to_string((hex.bg >> 8)  & 0xFF) + ";"
+    + std::to_string( hex.bg        & 0xFF) + "m";
+}
+
+std::string stl::Color::color(const RGB& fg, const RGB& bg) {
+  return "\033[38;2;"
+    + std::to_string(fg.r) + ";"
+    + std::to_string(fg.g) + ";"
+    + std::to_string(fg.b) + "m"
+    + "\033[48;2;"
+    + std::to_string(bg.r) + ";"
+    + std::to_string(bg.g) + ";"
+    + std::to_string(bg.b) + "m";;
+}
+
+std::string stl::Color::color(const ANSI256& fg, const ANSI256& bg) {
+  return 
+    "\033[38;5;" + std::to_string(fg.value) + "m"
+    "\033[48;5;" + std::to_string(bg.value) + "m";
+}
+
 std::string stl::Color::color(COLOR fg, COLOR bg, bool isBold) {
   std::string sequence = (isBold) ?
     color_bg(bg, true) + color_fg(fg, true) :
     color_bg(bg) + color_fg(fg);
   return sequence;
 }
+
 
 std::string stl::Color::color_fg(COLOR fg, bool isBold) {
   short value = static_cast<short>(fg);
@@ -64,5 +93,6 @@ std::string stl::Color::color_bg(COLOR bg, bool isBold) {
     : "\033[4" + std::to_string(value) + "m";
   return sequence;
 }
+
 
 std::string stl::Color::color_reset() { return "\033[0m"; }
