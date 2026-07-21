@@ -1,7 +1,7 @@
 ﻿#include "Color.h"
 
-stl::Style stl::Color::style_hex(const Hex& style) const {
-  return Style(style.fg, style.bg, ColorMode::TRUECOLOR);
+stl::Style stl::Color::style_hex(const Hex& fg, const Hex& bg) const {
+  return Style(fg.value, bg.value, ColorMode::TRUECOLOR);
 }
 
 stl::Style stl::Color::style_rgb(const RGB& fg, const RGB& bg) const {
@@ -40,15 +40,15 @@ stl::Style stl::Color::style_ansi16(const COLOR fg, const COLOR bg, BOLD_MODE mo
   return Style(fgValue, bgValue, ColorMode::ANSI16);
 }
 
-std::string stl::Color::color(const Hex& hex) {
+std::string stl::Color::color(const Hex& fg, const Hex& bg) {
   return "\033[38;2;"
-    + std::to_string((hex.fg >> 16) & 0xFF) + ";"
-    + std::to_string((hex.fg >> 8)  & 0xFF) + ";"
-    + std::to_string( hex.fg        & 0xFF) + "m"
+    + std::to_string((fg.value >> 16) & 0xFF) + ";"
+    + std::to_string((fg.value >> 8)  & 0xFF) + ";"
+    + std::to_string( fg.value        & 0xFF) + "m"
     + "\033[48;2;"
-    + std::to_string((hex.bg >> 16) & 0xFF) + ";"
-    + std::to_string((hex.bg >> 8)  & 0xFF) + ";"
-    + std::to_string( hex.bg        & 0xFF) + "m";
+    + std::to_string((bg.value >> 16) & 0xFF) + ";"
+    + std::to_string((bg.value >> 8)  & 0xFF) + ";"
+    + std::to_string( bg.value        & 0xFF) + "m";
 }
 
 std::string stl::Color::color(const RGB& fg, const RGB& bg) {

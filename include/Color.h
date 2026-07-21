@@ -27,7 +27,7 @@ namespace stl {
   };
 
   // Hexadecimal format (0xRRGGBB)
-  struct Hex { uint32_t fg, bg; };
+  struct Hex { uint32_t value; };
   // RGB format (Red, Green, Blue)
   struct RGB { uint8_t r, g, b; };
   // ANSI 256-color format (0-255 for foreground and background)
@@ -48,11 +48,11 @@ namespace stl {
         return 
           "\033[38;2;"
           + std::to_string((fg >> 16) & 0xFF) + ";"
-          + std::to_string((fg >> 8)  & 0xFF) + ";"
+          + std::to_string((fg >>  8) & 0xFF) + ";"
           + std::to_string( fg        & 0xFF) + "m"
           + "\033[48;2;"
           + std::to_string((bg >> 16) & 0xFF) + ";"
-          + std::to_string((bg >> 8)  & 0xFF) + ";"
+          + std::to_string((bg >>  8) & 0xFF) + ";"
           + std::to_string( bg        & 0xFF) + "m";
       }
       else if (mode == ColorMode::ANSI256) {
@@ -82,7 +82,7 @@ namespace stl {
 
     /*     Direct Style Application     */
     // Hex color code
-    Style style_hex(const Hex& style = { 0xCCCCCC, 0x0C0C0C }) const;
+    Style style_hex(const Hex& fg = { 0xCCCCCC }, const Hex& bg = { 0x0C0C0C }) const;
     // RGB color code
     Style style_rgb(const RGB& fg = { 204, 204, 204 }, const RGB& bg = { 12, 12, 12 }) const;
     // ANSI-256 color code (0-255 for foreground and background)
@@ -103,7 +103,7 @@ namespace stl {
 
     /*   Color Management   */
     // Set foreground and background using Hex format
-    static std::string color(const Hex& hex = { 0xCCCCCC, 0x0C0C0C });
+    static std::string color(const Hex& fg = { 0xCCCCCC }, const Hex& bg = { 0x0C0C0C });
     // Set forground and background using RGB format
     static std::string color(const RGB& fg = { 204, 204, 204 }, const RGB& bg = { 12, 12, 12 });
     // Set both foreground and background colors (ANSI-256 color)

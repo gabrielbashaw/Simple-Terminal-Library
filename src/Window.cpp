@@ -14,7 +14,6 @@ stl::Window::Window(const WindowConfig& config) : mCfg(config) {
   for (auto& row : mState.buffer) {
     row.resize(mOuterWidth);
     for (auto& cell : row) {
-      cell.style = mCfg.style;
       cell.glyph = ' ';
       cell.isDirty = true;
     }
@@ -22,34 +21,34 @@ stl::Window::Window(const WindowConfig& config) : mCfg(config) {
 }
 
 void stl::Window::border(){
-  short x = mOuterWidth;
-  short y = mOuterHeight;
+  short x = mOuterWidth - 1;
+  short y = mOuterHeight - 1;
   WindowBorder border = mCfg.border;
 
   // Window Corners
   mState.update_glyph(0, 0, border.topLeft);
-  mState.update_glyph(x - 1, 0, border.topRight);
-  mState.update_glyph(0, y - 1, border.bottomLeft);
-  mState.update_glyph(x - 1, y - 1, border.bottomRight);
+  mState.update_glyph(x, 0, border.topRight);
+  mState.update_glyph(0, y, border.bottomLeft);
+  mState.update_glyph(x, y, border.bottomRight);
 
   // Draw top and bottom borders
-  for (short i = 1; i < x - 1; ++i) {
+  for (short i = 1; i < x; ++i) {
     mState.update_glyph(i, 0, border.top);
-    mState.update_glyph(i, y - 1, border.bottom);
+    mState.update_glyph(i, y, border.bottom);
   }
 
   // Draw left and right borders
-  for (short i = 1; i < y - 1; ++i) {
+  for (short i = 1; i < y; ++i) {
     mState.update_glyph(0, i, border.left);
-    mState.update_glyph(x - 1, i, border.right);
+    mState.update_glyph(x, i, border.right);
   }
 }
 
 void stl::Window::print_random_garbage() {
   short x = mOuterWidth;
   short y = mOuterHeight;
-  for (short r = 1; r < y - 1; r++) {
-    for (short c = 1; c < x - 1; c++) {
+  for (short r = 0; r < y - 1; r++) {
+    for (short c = 0; c < x - 1; c++) {
       char randChar = ' ' + (rand() % 95); // Random ASCII char
       mState.update_glyph(c, r, randChar);
     }
@@ -87,7 +86,12 @@ void stl::Window::refresh(std::ostream& os) {
         cursorMoved = true;
       }
 
-      os << mState.get_cell(c, r);
+      // Style interior and exterior separately
+      if ((c == 0 || c == x - 1) || (r == 0 || r == y - 1))
+        os << mCfg.styleBorder.ansi() << mState.get_cell(c, r);
+      else
+        os << mCfg.styleBody.ansi() << mState.get_cell(c, r);
+
       mState.clean(c, r);
     }
   }

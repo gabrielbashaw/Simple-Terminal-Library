@@ -9,13 +9,12 @@ namespace stl {
   struct Cell {
     char  glyph   = ' ';       // Character to display
     bool  isDirty = true;      // Has cell changed since last refresh
-    Style style;
   };
   // Border characters for the window
   struct WindowBorder {
+    char top         = '-'; // ─
     char left        = '|';
     char right       = '|';
-    char top         = '-'; // ─
     char bottom      = '-'; // ─
     char topLeft     = '+';
     char topRight    = '+';
@@ -29,7 +28,8 @@ namespace stl {
     uint16_t     width  = 25;
     uint16_t     height = 10;
     WindowBorder border;
-    Style        style;
+    Style        styleBody;
+    Style        styleBorder;
   };
   // Current state of the window
   struct WindowState {
@@ -63,7 +63,7 @@ namespace stl {
     Window() = default;
     Window(const WindowConfig& config);
 
-    // Draw a mBorder around the window
+    // Draw a border around the window
     void border();
     // Print random garbage in window for testing
     void print_random_garbage();
@@ -74,14 +74,14 @@ namespace stl {
 
   private:
     WindowConfig mCfg;
-    WindowState mState;
+    WindowState  mState;
 
-    uint16_t mOuterWidth;
-    uint16_t mOuterHeight;
+    uint16_t     mOuterWidth;
+    uint16_t     mOuterHeight;
   };
 
   inline std::ostream& operator<<(std::ostream& os, const Cell& cell) {
-    os << cell.style.ansi() << cell.glyph;
+    os << cell.glyph << "\033[0m";
     return os;
   }
 }
