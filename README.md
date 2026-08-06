@@ -39,38 +39,33 @@ STL provides a clean abstraction over terminal rendering, input handling, and wi
   <summary><h3>Sample Code:</h3></summary>
 
   ```cpp
-  #include "Color.h"
-  #include "Window.h"
+  #include "widgets/Window.h"
 
   // Function to create and configure a window
-  stl::Window WindowBuilder(
-  uint16_t width, uint16_t height,
-  uint16_t startX, uint16_t startY) {
-  stl::Color color;
-  stl::WindowConfig cfg{        // Window configuration parameters
-    .startX = startX,
-    .startY = startY,
-    .width = width,
-    .height = height,
-    .style = color.style_rgb({ 255, 255, 255 }, { 0, 0, 0 }),
-  };
-  stl::Window win(cfg);         // Create a window with the specified configuration
-  win.print_random_garbage();   // Fill the window buffer with random characters for testing
-  win.print(3, 3, "String");    // Print "String" at position (3, 3) in the window buffer
-  win.border();                 // Draw a border around the window
-  return win;
-}
+  stl::Window WindowBuilder(stl::Point point, stl::Size size) {
+    stl::Color color;
+    stl::WindowConfig cfg{        // Window configuration parameters
+      .bounds{
+        .pos  = point,
+        .size = size
+      },
+      .styleBody   = color.style_rgb({ 255, 255, 0 }, { 0, 0, 0 }),
+      .styleBorder = color.style_rgb({ 255, 255, 255 }, { 0, 0, 0 })
+    };
+    stl::Window win(cfg);         // Create a window with the specified configuration
+
+    win.print_random_garbage();   // Fill the window buffer with random characters for testing
+    win.print({ 3, 3 }, "String");    // Print "String" at position (3, 3) in the window buffer
+    win.border();                 // Draw a border around the window
+
+    return win;
+  }
   
   int main() {
-    uint16_t width = 30;
-    uint16_t height = 10;
-    uint16_t startX = 5;
-    uint16_t startY = 5;
-
-    stl::Window win = WindowBuilder(width, height, startX, startY);
+    stl::Window win = WindowBuilder({ 5, 5 }, { 30, 10 });
 
     while (true) {
-      win.refresh(std::cout);   // Render the window buffer to the terminal
+      win.refresh();   // Render the window buffer to the terminal
     }
   }
   ```
