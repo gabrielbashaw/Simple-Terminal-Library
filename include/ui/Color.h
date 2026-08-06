@@ -17,14 +17,6 @@ namespace stl {
     ANSI256,
     TRUECOLOR,
   };
-  // TODO: Text attribute flags (e.g. bold, underline, reverse, blink, dim)
-  enum class Flags {
-    BOLD = 1 << 0,
-    UNDERLINE = 1 << 1,
-    REVERSE = 1 << 2,
-    BLINK = 1 << 3,
-    DIM = 1 << 4,
-  };
 
   // Hexadecimal format (0xRRGGBB)
   struct Hex { uint32_t value; };
@@ -104,7 +96,7 @@ namespace stl {
     /*   Color Management   */
     // Set foreground and background using Hex format
     static std::string color(const Hex& fg = { 0xCCCCCC }, const Hex& bg = { 0x0C0C0C });
-    // Set forground and background using RGB format
+    // Set foreground and background using RGB format
     static std::string color(const RGB& fg = { 204, 204, 204 }, const RGB& bg = { 12, 12, 12 });
     // Set both foreground and background colors (ANSI-256 color)
     static std::string color(const ANSI256& fg, const ANSI256& bg);
@@ -115,6 +107,8 @@ namespace stl {
     static std::string color_fg(COLOR fg, bool isBold = false);
     // Set background color, with optional bright varient (bold)
     static std::string color_bg(COLOR bg, bool isBold = false);
+
+    static std::string set_text_color(std::string text, const Hex& fg = { 0xCCCCCC }, const Hex& bg = { 0x0C0C0C });
 
     // Reset ALL color attributes
     static std::string color_reset();

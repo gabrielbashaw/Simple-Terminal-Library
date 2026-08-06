@@ -1,4 +1,4 @@
-﻿#include "Color.h"
+﻿#include "ui/Color.h"
 
 stl::Style stl::Color::style_hex(const Hex& fg, const Hex& bg) const {
   return Style(fg.value, bg.value, ColorMode::TRUECOLOR);
@@ -92,6 +92,10 @@ std::string stl::Color::color_bg(COLOR bg, bool isBold) {
     ? "\033[10" + std::to_string(value) + "m"
     : "\033[4" + std::to_string(value) + "m";
   return sequence;
+}
+
+std::string stl::Color::set_text_color(std::string text, const Hex& fg, const Hex& bg) {
+  return color(fg, bg) + text + color_reset();
 }
 
 

@@ -1,4 +1,4 @@
-﻿#include "Console.h"
+﻿#include "terminal/Console.h"
 
 void PrintFlag(const char* name, DWORD mode, DWORD flag) {
   std::cout << name << ": "
@@ -7,16 +7,16 @@ void PrintFlag(const char* name, DWORD mode, DWORD flag) {
 }
 
 void Flags(DWORD mode) {
-  PrintFlag("PROCESSED_INPUT", mode, ENABLE_PROCESSED_INPUT);
-  PrintFlag("LINE_INPUT", mode, ENABLE_LINE_INPUT);
-  PrintFlag("ECHO_INPUT", mode, ENABLE_ECHO_INPUT);
-  PrintFlag("MOUSE_INPUT", mode, ENABLE_MOUSE_INPUT);
-  PrintFlag("INSERT_MODE", mode, ENABLE_INSERT_MODE);
-  PrintFlag("QUICK_EDIT_MODE", mode, ENABLE_QUICK_EDIT_MODE);
-  PrintFlag("EXTENDED_FLAGS", mode, ENABLE_EXTENDED_FLAGS);
-  PrintFlag("AUTO_POSITION", mode, ENABLE_AUTO_POSITION);
-  PrintFlag("WINDOW_INPUT", mode, ENABLE_WINDOW_INPUT);
-  PrintFlag("VIRTUAL_TERMINAL_INPUT", mode, ENABLE_VIRTUAL_TERMINAL_INPUT);
+  PrintFlag("PROCESSED_INPUT",                    mode, ENABLE_PROCESSED_INPUT);
+  PrintFlag("LINE_INPUT",                         mode, ENABLE_LINE_INPUT);
+  PrintFlag("ECHO_INPUT",                         mode, ENABLE_ECHO_INPUT);
+  PrintFlag("MOUSE_INPUT",                        mode, ENABLE_MOUSE_INPUT);
+  PrintFlag("INSERT_MODE",                        mode, ENABLE_INSERT_MODE);
+  PrintFlag("QUICK_EDIT_MODE",                    mode, ENABLE_QUICK_EDIT_MODE);
+  PrintFlag("EXTENDED_FLAGS",                     mode, ENABLE_EXTENDED_FLAGS);
+  PrintFlag("AUTO_POSITION",                      mode, ENABLE_AUTO_POSITION);
+  PrintFlag("WINDOW_INPUT",                       mode, ENABLE_WINDOW_INPUT);
+  PrintFlag("VIRTUAL_TERMINAL_INPUT",             mode, ENABLE_VIRTUAL_TERMINAL_INPUT);
   PrintFlag("ENABLE_VIRTUAL_TERMINAL_PROCESSING", mode, ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 }
 
