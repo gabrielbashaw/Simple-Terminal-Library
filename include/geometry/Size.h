@@ -22,9 +22,7 @@ namespace stl {
 		unsigned short _rows;
 	};
 
-  /// <summary>
-  /// Represents a two-dimensional size using column (X) and row (Y).
-  /// </summary>
+	/// @brief Represents a two-dimensional size using column (X) and row (Y)
 	class Size {
 	public:
 		Size() = default;
