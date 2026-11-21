@@ -56,7 +56,7 @@ stl::Style stl::Color::style_ansi256(ANSI color, Attribute attr) {
   );
 }
 
-stl::Style stl::Color::style_ansi16(ANSI fg, ANSI bg, Attribute attr) {
+stl::Style stl::Color::style_ansi16(ANSI16 fg, ANSI16 bg, Attribute attr) {
   return style(
     ColorValue::ansi16(fg),
     ColorValue::ansi16(bg),
@@ -64,7 +64,7 @@ stl::Style stl::Color::style_ansi16(ANSI fg, ANSI bg, Attribute attr) {
   );
 }
 
-stl::Style stl::Color::style_ansi16(ANSI color, Attribute attr) {
+stl::Style stl::Color::style_ansi16(ANSI16 color, Attribute attr) {
   return style(
     ColorValue::ansi16(color),
     ColorValue::ansi16(color),
@@ -125,14 +125,14 @@ std::string stl::Color::color_ansi256(const ANSI color) {
     ";48;5;" + std::to_string(color) + "m";
 }
 
-std::string stl::Color::color_ansi16(AnsiColor fg, AnsiColor bg, bool isBright) {
+std::string stl::Color::color_ansi16(ANSI16 fg, ANSI16 bg, bool isBright) {
   std::string sequence = (isBright) ?
     color_bg(bg, true) + color_fg(fg, true) :
     color_bg(bg) + color_fg(fg);
   return sequence;
 }
 
-std::string stl::Color::color_ansi16(AnsiColor color, bool isBright) {
+std::string stl::Color::color_ansi16(ANSI16 color, bool isBright) {
   std::string sequence = (isBright) ?
     color_bg(color, true) + color_fg(color, true) :
     color_bg(color) + color_fg(color);
@@ -140,7 +140,7 @@ std::string stl::Color::color_ansi16(AnsiColor color, bool isBright) {
 }
 
 
-std::string stl::Color::color_fg(AnsiColor fg, bool isBright) {
+std::string stl::Color::color_fg(ANSI16 fg, bool isBright) {
   short value = static_cast<short>(fg);
   if (value > 7 || value < 0) return "\033[37m";
   std::string sequence = (isBright)
@@ -149,7 +149,7 @@ std::string stl::Color::color_fg(AnsiColor fg, bool isBright) {
   return sequence;
 }
 
-std::string stl::Color::color_bg(AnsiColor bg, bool isBright) {
+std::string stl::Color::color_bg(ANSI16 bg, bool isBright) {
   short value = static_cast<short>(bg);
   if (value > 7 || value < 0) return "\033[40m";
   std::string sequence = (isBright)
@@ -163,17 +163,17 @@ std::string stl::Color::color_bg(AnsiColor bg, bool isBright) {
 /*                  ANSI Class Functions                  */
 /* ====================================================== */
 
-std::string stl::Ansi::apply(Style &style) {
+std::string stl::Ansi::apply(Style& style) {
   std::string code;
+  append_attr(code, style.attr);
   append_color(code, style.fg, true);
-  code += ";";
   append_color(code, style.bg, false);
   return "\033[" + code + "m";
 }
 
 std::string stl::Ansi::reset() { return "\033[0m"; }
 
-void stl::Ansi::append_color(std::string &result, const ColorValue &original, bool fg) {
+void stl::Ansi::append_color(std::string& result, const ColorValue& original, bool fg) {
   const int channel = fg ? 38 : 48;
   
   switch (original.format) {
@@ -185,11 +185,35 @@ void stl::Ansi::append_color(std::string &result, const ColorValue &original, bo
       result += std::to_string(original.value & 0xFF);
     break;
     case ColorFormat::ANSI16:
-      // TODO: Finish this at some point
+      result += std::to_string((channel - 8) + original.value);
     break;
     case ColorFormat::ANSI256:
       result += std::to_string(channel) + ";5;";
       result += std::to_string(original.value);
     break;
   }
+  if (channel == 38) result += ";";
+}
+
+void stl::Ansi::append_attr(std::string& result, const Attribute& attr) {
+  if (has_attr(attr, stl::Attribute::BOLD))
+    result += "1;";
+  if (has_attr(attr, stl::Attribute::DIM))
+    result += "2;";
+  if (has_attr(attr, stl::Attribute::ITALIC))
+    result += "3;";
+  if (has_attr(attr, stl::Attribute::UNDERLINE))
+    result += "4;";
+  if (has_attr(attr, stl::Attribute::BLINK))
+    result += "5;";
+  if (has_attr(attr, stl::Attribute::REVERSE))
+    result += "7;";
+  if (has_attr(attr, stl::Attribute::HIDDEN))
+    result += "8;";
+  if (has_attr(attr, stl::Attribute::STRIKE))
+    result += "9;";
+}
+
+bool stl::has_attr(const Attribute& attr, Attribute flag) {
+  return (attr & flag) != stl::Attribute::NONE;
 }
